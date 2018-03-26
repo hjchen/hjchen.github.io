@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>fi3ework&#39;s Studio</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >fi3ework&#39;s Studio.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name"></a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>fi3ework's Studio.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            [Untitled Post]
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/03/26</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="H5直播入门（理论篇）"><a href="#H5直播入门（理论篇）" class="headerlink" title="H5直播入门（理论篇）"></a>H5直播入门（理论篇）</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>这篇总结其实是去年公司每周技术分享会轮到我的时候写的。那时候公司正在大刀阔斧地准备直播业务，私以为主管会委以重任，就翻了不少论坛，做了一次简单的技术分享。后来直播业务让另一位同事承担了，自己也就没了实践直播的机会，有点可惜吧。好了，废话不多说，开始我们的理论篇~</p>
+<h2 id="技术背景"><a href="#技术背景" class="headerlink" title="技术背景"></a>技术背景</h2><p><img src="https://user-gold-cdn.xitu.io/2018/3/15/16228e279680022b?w=730&amp;h=365&amp;f=jpeg&amp;s=46618" alt=""><br>可以看到，直播从 PC 到一直发展到移动端，越来越多的直播类 App 上线，同时移动直播进入了前所未有的爆发阶段，但是对于大多数移动直播来说，还是要以 Native 客户端实现为主，但是 H5 在移动直播端也承载着不可替代的作用，例如 H5 有着传播快，易发布的优势，同时最为关键的是 H5 同样可以播放直播视频。</p>
+<p>2016年是直播元年，一是由于各大宽带提供商顺应民意增宽降价，二是大量资本流进了直播板块，促进了技术的更新迭代。市面上，最常用的是 Apple 推出的 HLS 直播协议（原始支持 H5 播放），当然，还有 RTMP、HTTP-FLV、RTP等。</p>
+<h2 id="视频文件格式和直播协议"><a href="#视频文件格式和直播协议" class="headerlink" title="视频文件格式和直播协议"></a>视频文件格式和直播协议</h2><h3 id="视频文件格式"><a href="#视频文件格式" class="headerlink" title="视频文件格式"></a>视频文件格式</h3><p>视频文件格式实际上，我们常常称作为容器格式，也就是，我们一般生活中最经常谈到的格式，flv，mp4，ogg 格式等。它就可以理解为将比特流按照一定顺序放进特定的盒子里。那选用不同格式来装视频有什么问题吗？</p>
+<p>答案是，没有任何问题，但是你需要知道如何将该盒子解开，并且能够找到对应的解码器进行解码。那如果按照这样看的话，对于这些 mp4，ogv，webm等等视频格式，只要我有这些对应的解码器以及播放器，那么就没有任何问题。那么将视频比特流放进一个盒子里面，如果其中某一段出现问题，那么最终生成的文件实际上是不可用的，因为这个盒子本身就是有问题的。</p>
+<p>不过，上面有一个误解的地方在于，我只是将视频理解为一个静态的流。试想一下，如果一个视频需要持续不断的播放，例如，直播，现场播报等。这里，我们就拿 TS/PS 流来进行讲解。</p>
+<ul>
+<li><p>PS（Program Stream）: 静态文件流</p>
+</li>
+<li><p>TS（Transport Stream）: 动态文件流</p>
+</li>
+</ul>
+<p>针对于上面两种容器格式，实际上是对一个视频比特流做了不一样的处理。</p>
+<ul>
+<li>PS: 将完成视频比特流放到一个盒子里，生成固定的文件</li>
+<li>TS: 将接受到的视频，分成不同的盒子里。最终生成带有多个盒子的文件。</li>
+</ul>
+<p>那么结果就是，如果一个或多个盒子出现损坏，PS 格式无法观看，而 TS 只是会出现跳帧或者马赛克效应。两者具体的区别就是：对于视频的容错率越高，则会选用 TS，对视频容错率越低，则会选用 PS。</p>
+<h3 id="直播协议HLS"><a href="#直播协议HLS" class="headerlink" title="直播协议HLS"></a>直播协议HLS</h3><p>HTTP Live Streaming（简称 HLS）是一个基于 HTTP 的视频流协议。这是 Apple 提出的直播流协议。目前，IOS 和 高版本 Android 都支持 HLS。那什么是 HLS 呢？HLS 主要的两块内容是 .m3u8 文件和 .ts 播放文件。</p>
+<p>HLS 协议基于 HTTP，而一个提供 HLS 的服务器需要做两件事：</p>
+<p>编码：以 H.263 格式对图像进行编码，以 MP3 或者 HE-AAC 对声音进行编码，最终打包到 MPEG-2 TS（Transport Stream）容器之中；</p>
+<p>分割：把编码好的 TS 文件等长切分成后缀为 ts 的小文件，并生成一个 .m3u8 的纯文本索引文件；</p>
+<p>浏览器使用的是 m3u8 文件。m3u8 跟音频列表格式 m3u 很像，可以简单的认为 m3u8 就是包含多个 ts 文件的播放列表。播放器按顺序逐个播放，全部放完再请求一下 m3u8 文件，获得包含最新 ts 文件的播放列表继续播，周而复始。整个直播过程就是依靠一个不断更新的 m3u8 和一堆小的 ts 文件组成，m3u8 必须动态更新，ts 可以走 CDN。</p>
+<p>这里，我们着重介绍一下客户端的过程。首先，直播之所以是直播，在于它的内容是实时更新的。那 HLS 是怎么完成呢？</p>
+<p>我们使用 HLS 直接就用一个 video 进行包括即可：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">video</span> <span class="attr">autoplay</span> <span class="attr">controls</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">source</span> <span class="attr">src</span>=<span class="string">"xxx.m3u8"</span> <span class="attr">type</span>=<span class="string">"application/vnd.apple.mpegurl"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">"warning"</span>&gt;</span>Your browser doesn't support video<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">video</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>根据上面的描述，它实际上就是去请求一个 .m3u8 的索引文件。该文件包含了对 .ts 文件的相关描述，例如：<br><img src="https://user-gold-cdn.xitu.io/2018/3/15/16228f1916df7665?w=690&amp;h=146&amp;f=png&amp;s=21885" alt=""><br>不过，这只是一个非常简单，不涉及任何功能的直播流。实际上，HLS 的整个架构，可以分为：<br><img src="https://user-gold-cdn.xitu.io/2018/3/15/16228f32cc37fef0?w=800&amp;h=697&amp;f=png&amp;s=122169" alt=""><br>masterplaylist 主要干的事就是根据, 当前用户的带宽，分辨率，解码器等条件决定使用哪一个流。所以，master playlist 是为了更好的用户体验而存在的。</p>
+<p>当填写了 master playlist URL，那么用户只会下载一次该 master playlist。接着，播放器根据当前的环境决定使用哪一个 media playlist（就是 子 m3u8 文件）。如果，在播放当中，用户的播放条件发生变化时，播放器也会切换对应的 media playlist。</p>
+<p>当然，HLS 支持的功能，并不只是分片播放（专门适用于直播），它还包括其他应有的功能。</p>
+<ul>
+<li>使用 HTTPS 加密 ts 文件</li>
+<li><p>快/倒放</p>
+</li>
+<li><p>广告插入</p>
+</li>
+<li><p>不同分辨率视频切换</p>
+</li>
+</ul>
+<p>可以看到 HLS 协议本质还是一个个的 HTTP 请求 / 响应，所以适应性很好，不会受到防火墙影响。但它也有一个致命的弱点：延迟现象非常明显。如果每个 ts 按照 5 秒来切分，一个 m3u8 放 6 个 ts 索引，那么至少就会带来 30 秒的延迟。如果减少每个 ts 的长度，减少 m3u8 中的索引数，延时确实会减少，但会带来更频繁的缓冲，对服务端的请求压力也会成倍增加。所以只能根据实际情况找到一个折中的点。</p>
+<p>注意：HLS 在 PC 端仅支持safari浏览器，类似chrome浏览器使用HTML5 video标签无法播放 m3u8 格式，可直接采用网上一些比较成熟的方案，如：sewise-player、MediaElement、videojs-contrib-hls、jwplayer。</p>
+<h3 id="直播协议RTMP"><a href="#直播协议RTMP" class="headerlink" title="直播协议RTMP"></a>直播协议RTMP</h3><p>Real Time Messaging Protocol（简称 RTMP）是 Macromedia 开发的一套视频直播协议，现在属于 Adobe。和 HLS 一样都可以应用于视频直播，区别是 RTMP 基于 flash 无法在 iOS 的浏览器里播放，但是实时性比 HLS 要好。所以一般使用这种协议来上传视频流，也就是视频流推送到服务器。</p>
+<p>下面是 HLS 和 RTMP 的对比：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/15/16228f66b4ed3670?w=645&amp;h=447&amp;f=jpeg&amp;s=44265" alt=""></p>
+<h3 id="直播协议HTTP-FLV"><a href="#直播协议HTTP-FLV" class="headerlink" title="直播协议HTTP-FLV"></a>直播协议HTTP-FLV</h3><p>HTTP-FLV 和 RTMP 类似，都是针对于 FLV 视频格式做的直播分发流。但，两者有着很大的区别。</p>
+<ul>
+<li>直接发起长连接，下载对应的 FLV 文件</li>
+<li>头部信息简单</li>
+</ul>
+<p>现在市面上，比较常用的就是 HTTP-FLV 进行播放。但，由于手机端上不支持，所以，H5 的 HTTP-FLV 也是一个痛点。不过，现在 flv.js 可以帮助高版本的浏览器，通过 mediaSource 来进行解析。HTTP-FLV 的使用方式也很简单。和 HLS 一样，只需要添加一个连接即可：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">object</span> <span class="attr">type</span>=<span class="string">"application/x-shockwave-flash"</span> <span class="attr">src</span>=<span class="string">"xxx.flv"</span>&gt;</span><span class="tag">&lt;/<span class="name">object</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="直播基本架构"><a href="#直播基本架构" class="headerlink" title="直播基本架构"></a>直播基本架构</h2><p>目前较为成熟的直播产品，大致都是以 Server 端和 H5 和 Native(android,ios)搭配实现直播，基本是下图这个套路：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/15/16228f9c220cfcda?w=732&amp;h=417&amp;f=jpeg&amp;s=27110" alt=""><br>完整的直播可以分为以下几块：</p>
+<ul>
+<li><p>视频录制端：一般是电脑上的音视频输入设备或者手机端的摄像头或者麦克风，目前以移动端的手机视频为主。</p>
+</li>
+<li><p>视频播放端：可以是电脑上的播放器，手机端的 Native 播放器，还有就是 H5 的 video 标签等，目前还是已手机端的 Native 播放器为主。</p>
+</li>
+<li><p>视频服务器端：一般是一台 nginx 服务器，用来接受视频录制端提供的视频源，同时提供给视频播放端流服务。</p>
+</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/15/16228fa94ba868a7?w=623&amp;h=382&amp;f=jpeg&amp;s=18332" alt=""><br>而现行H5类似直播页面，实现技术难点不大，其可以通过实现方式分为：① 底部视频背景使用video视频标签实现播放 ② 关注、评论模块利用 WebScoket 来实时发送和接收新的消息通过DOM 和 CSS3 实现 ③ 点赞利用 CSS3 动画</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/15/16228faf5dedb190?w=720&amp;h=1280&amp;f=jpeg&amp;s=122710" alt=""><br>对于弹幕来说，要稍微复杂一些，可能需要关注以下几点：</p>
+<ul>
+<li><p>弹幕实时性，可以利用 webscoket 来实时发送和接收新的弹幕并渲染出来。</p>
+</li>
+<li><p>对于不支持 webscoket 的浏览器来说，只能降级为长轮询或者前端定时器发送请求来获取实时弹幕。</p>
+</li>
+<li><p>弹幕渲染时的动画和碰撞检测(即弹幕不重叠)等等</p>
+<h2 id="H5直播方案"><a href="#H5直播方案" class="headerlink" title="H5直播方案"></a>H5直播方案</h2><h3 id="使用flv-js做直播"><a href="#使用flv-js做直播" class="headerlink" title="使用flv.js做直播"></a>使用flv.js做直播</h3></li>
+<li><p>简介</p>
+</li>
+</ul>
+<p>flv.js是来自Bilibli的开源项目。它解析FLV文件喂给原生HTML5 Video标签播放音视频数据，使浏览器在不借助Flash的情况下播放FLV成为可能。</p>
+<ul>
+<li>优势</li>
+</ul>
+<p>由于浏览器对原生Video标签采用了硬件加速，性能很好，支持高清。同时支持录播和直播。去掉对Flash的依赖。</p>
+<ul>
+<li>浏览器依赖</li>
+</ul>
+<p>flv.js依赖的浏览器特性兼容列表</p>
+<p>1、HTML5 Video</p>
+<p>2、Media Source Extensions</p>
+<p>3、WebSocket</p>
+<p>4、HTTP FLV: fetch 或 stream</p>
+<ul>
+<li>原理</li>
+</ul>
+<p>flv.js只做了一件事，在获取到FLV格式的音视频数据后通过原生的JS去解码FLV数据，再通过Media Source Extensions API 喂给原生HTML5 Video标签。(HTML5 原生仅支持播放 mp4/webm 格式，不支持 FLV)</p>
+<p>flv.js 为什么要绕一圈，从服务器获取FLV再解码转换后再喂给Video标签呢？原因如下：</p>
+<p>1、兼容目前的直播方案：目前大多数直播方案的音视频服务都是采用FLV容器格式传输音视频数据。</p>
+<p>2、FLV容器格式相比于MP4格式更加简单，解析起来更快更方便。</p>
+<ul>
+<li>兼容方案</li>
+</ul>
+<p>PC端</p>
+<p>1、优先使用 HTTP-FLV，因为它延迟小，性能也不差1080P都很流畅。</p>
+<p>2、不支持 flv.js 就使用 Flash播放器播 RTMP 流。Flash兼容性很好，但是性能差默认被很多浏览器禁用。</p>
+<p>3、不想用Flash兼容也可以用HLS，但是PC端只有Safari支持HLS</p>
+<p>移动端</p>
+<p>1、优先使用 HTTP-FLV，因为它延迟小，支持HTTP-FLV的设备性能运行 flv.js 足够了。</p>
+<p>2、不支持 flv.js 就使用 HLS，但是 HLS延迟非常大。</p>
+<p>3、HLS 也不支持就没法直播了，因为移动端都不支持Flash。</p>
+<p>好了，毕竟是入门理论篇，后续如果有业务实践我会更新的，感觉阅读至此，比心~</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/03/26/hello-world/" title= Hello World >
+                    <div class="prevTitle">Hello World</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:12345@qq.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/fi3ework" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/example_qr.png" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#H5直播入门（理论篇）"><span class="toc-number">1.</span> <span class="toc-text">H5直播入门（理论篇）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#技术背景"><span class="toc-number">1.2.</span> <span class="toc-text">技术背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#视频文件格式和直播协议"><span class="toc-number">1.3.</span> <span class="toc-text">视频文件格式和直播协议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#视频文件格式"><span class="toc-number">1.3.1.</span> <span class="toc-text">视频文件格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#直播协议HLS"><span class="toc-number">1.3.2.</span> <span class="toc-text">直播协议HLS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#直播协议RTMP"><span class="toc-number">1.3.3.</span> <span class="toc-text">直播协议RTMP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#直播协议HTTP-FLV"><span class="toc-number">1.3.4.</span> <span class="toc-text">直播协议HTTP-FLV</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#直播基本架构"><span class="toc-number">1.4.</span> <span class="toc-text">直播基本架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#H5直播方案"><span class="toc-number">1.5.</span> <span class="toc-text">H5直播方案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#使用flv-js做直播"><span class="toc-number">1.5.1.</span> <span class="toc-text">使用flv.js做直播</span></a></li></ol></li></ol></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 2 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/26</span><a class="archive-post-title" href= "/2018/03/26/H5直播入门（理论篇）/" >[Untitled Post]</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/26</span><a class="archive-post-title" href= "/2018/03/26/hello-world/" >Hello World</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'John Doe'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+
