@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>JS异步与性能（一） · YellowFlash&#39;s blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/bitbug_favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >YellowFlash&#39;s blog.</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">JS异步与性能（一）</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>YellowFlash's blog.</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            JS异步与性能（一）
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/03/27</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>看了《你不知道的javascript》上卷以及中卷之后，自己的一些总结。</p>
+<h3 id="事件循环"><a href="#事件循环" class="headerlink" title="事件循环"></a>事件循环</h3><p>JavaScript 引擎并不是独立运行的，它运行在宿主环境中，对多数开发者来说通常就是Web 浏览器。处理程序中多个块的执行，且执行每块时调用JavaScript 引擎，这种机制被称为<span style="color:#F2777A;">事件循环</span>。</p>
+<p>先通过一段伪代码了解一下这个概念:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// eventLoop是一个用作队列的数组</span></span><br><span class="line"><span class="comment">// （先进，先出）</span></span><br><span class="line"><span class="keyword">var</span> eventLoop = [ ];</span><br><span class="line"><span class="keyword">var</span> event;</span><br><span class="line"><span class="comment">// “永远”执行</span></span><br><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="comment">// 一次tick</span></span><br><span class="line">    <span class="keyword">if</span> (eventLoop.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// 拿到队列中的下一个事件</span></span><br><span class="line">        event = eventLoop.shift();</span><br><span class="line">        <span class="comment">// 现在，执行下一个事件</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            event();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">            reportError(err);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>你可以看到，有一个用while 循环实现的持续运行的循环，循环的每一轮称为一个tick。<br>对每个tick 而言，如果在队列中有等待事件，那么就会从队列中摘下一个事件并执行。这<br>些事件就是你的回调函数。</p>
+<p>一定要清楚，setTimeout(..) 并没有把你的回调函数挂在事件循环队列中。它所做的是设定一个定时器。当定时器到时后，环境会把你的回调函数放在事件循环中，这样，在未来某个时刻的tick 会摘下并执行这个回调。</p>
+<p>如果这时候事件循环中已经有20 个项目了会怎样呢？你的回调就会等待。它得排在其他项目后面——通常没有抢占式的方式支持直接将其排到队首。这也解释了为什么setTimeout(..) 定时器的精度可能不高。大体说来，只能确保你的回调函数不会在指定的<br>时间间隔之前运行，但可能会在那个时刻运行，也可能在那之后运行，要根据事件队列的状态而定。</p>
+<h3 id="回调"><a href="#回调" class="headerlink" title="回调"></a>回调</h3><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">listen(<span class="string">"click"</span>, <span class="function"><span class="keyword">function</span> <span class="title">handler</span>(<span class="params">evt</span>)</span>&#123;</span><br><span class="line">    setTimeout( <span class="function"><span class="keyword">function</span> <span class="title">request</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        ajax( <span class="string">"http://some.url.1"</span>, <span class="function"><span class="keyword">function</span> <span class="title">response</span>(<span class="params">text</span>)</span>&#123;</span><br><span class="line">            <span class="keyword">if</span> (text == <span class="string">"hello"</span>) &#123;</span><br><span class="line">                handler();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span> (text == <span class="string">"world"</span>) &#123;</span><br><span class="line">                request();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; );</span><br><span class="line">    &#125;, <span class="number">500</span>) ;</span><br><span class="line">&#125; );</span><br></pre></td></tr></table></figure>
+<p>你很可能非常熟悉这样的代码。这里我们得到了三个函数嵌套在一起构成的链，其中每个函数代表异步序列（任务，“进程”）中的一个步骤。这种代码常常被称为<span style="color:#F2777A;">回调地狱</span>（callback hell），有时也被称为毁灭金字塔（pyramid of doom，得名于嵌套缩进产生的横向三角形状）。</p>
+<ul>
+<li><span style="color:#F2777A;">线性跟踪</span><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">doA( <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    doB();</span><br><span class="line">    doC( <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">        doD();</span><br><span class="line">    &#125; )</span><br><span class="line">    doE();</span><br><span class="line">&#125; );</span><br><span class="line">doF();</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>执行顺序是？</p>
+<p>A、F、B、C、E、D</p>
+<p>在线性（顺序）地追踪这段代码的过程中，我们不得不从一个函数跳到下一个，再跳到下一个，在整个代码中跳来跳去以“查看”流程。而且别忘了，这还是简化的形式，只考虑了最优情况。我们都知道，真实的异步JavaScript程序代码要混乱得多，这使得这种追踪的难度会成倍增加。</p>
+<p>我们的顺序阻塞式的大脑计划行为无法很好地映射到面向回调的异步代码。这就是回调方式最主要的缺陷：对于它们在代码中表达异步的方式，我们的大脑需要努力才能同步得上。</p>
+<ul>
+<li><span style="color:#F2777A;">信任问题</span></li>
+</ul>
+<p>这是回调驱动设计最严重（也是最微妙）的问题。它以这样一个思路为中心：有时候ajax(..)（也就是你交付回调continuation 的第三方）不是你编写的代码，也不在你的直接控制下。多数情况下，它是某个第三方提供的工具。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A</span></span><br><span class="line">ajax( <span class="string">".."</span>, <span class="function"><span class="keyword">function</span>(<span class="params">..</span>)</span>&#123;</span><br><span class="line">    <span class="comment">// C</span></span><br><span class="line">&#125; );</span><br><span class="line"><span class="comment">// B</span></span><br></pre></td></tr></table></figure></p>
+<p>我们把这称为控制反转（inversion of control），也就是把自己程序一部分的执行控制交给某个第三方。在你的代码和第三方工具（一组你希望有人维护的东西）之间有一份并没有明确表达的契约。</p>
+<ul>
+<li><span style="color:#F2777A;">回调设计</span></li>
+</ul>
+<p>为了更优雅地处理错误，有些API 设计提供了分离回调（一个用于成功通知，一个用于出错通知）：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">success</span>(<span class="params">data</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log( data );</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">failure</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.error( err );</span><br><span class="line">&#125;</span><br><span class="line">ajax( <span class="string">"http://some.url.1"</span>, success, failure );</span><br></pre></td></tr></table></figure></p>
+<p>还有一种常见的回调模式叫作“error-first 风格”（有时候也称为“Node风格”，因为几乎所有Node.jsAPI都采用这种风格），其中回调的第一个参数保留用作错误对象（如果有的话）。如果成功的话，这个参数就会被清空/置假（后续的参数就是成功数据）。不过，如果产生了错误结果，那么第一个参数就会被置起/ 置真（通常就不会再传递其他结果）：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">response</span>(<span class="params">err,data</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 出错？</span></span><br><span class="line">    <span class="keyword">if</span> (err) &#123;</span><br><span class="line">        <span class="built_in">console</span>.error( err );</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 否则认为成功</span></span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="built_in">console</span>.log( data );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">ajax( <span class="string">"http://some.url.1"</span>, response );</span><br></pre></td></tr></table></figure></p>
+<h3 id="setTimeout"><a href="#setTimeout" class="headerlink" title="setTimeout"></a>setTimeout</h3><p>教科书里面的setTimeout 定义很简单。</p>
+<p>setTimeout() 方法用于在指定的毫秒数后调用函数或计算表达式。广泛应用场景：定时器，轮播图，动画效果，自动滚动等等。但是setTimeout真的有那么简单吗？</p>
+<p>测试题<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">1</span>;i &lt;= <span class="number">5</span>;i ++) &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="keyword">function</span> <span class="title">timer</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(i)</span><br><span class="line">    &#125;,i * <span class="number">1000</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>答案：以一秒的频率连续输出五个6。</p>
+<p>解答</p>
+<ul>
+<li><span style="color:#F2777A;">作用域</span></li>
+</ul>
+<p>这里我引用《你不知道的javascript》中的一个比喻，可以把作用域链想象成一座高楼，第一层代表当前执行作用域，楼的顶层代表全局作用域。我们在查找变量时会先在当前楼层进行查找，如果没有找到，就会坐电梯前往上一层楼，如果还是没有找到就继续向上找，以此类推。到达顶层后（全局作用域），可能找到了你所需的变量，也可能没找到，但无论如何查找过程都将停止。</p>
+<ul>
+<li><span style="color:#F2777A;">任务队列</span></li>
+</ul>
+<p>事件循环只有一个，但任务队列可能有多个，任务队列可分为<span style="color:#F2777A;">宏任务</span>（macro-task）和<span style="color:#F2777A;">微任务</span>（micro-task）。XHR回调、事件回调（鼠标键盘事件）、setImmediate、setTimeout、setInterval、indexedDB数据库操作等I/O以及UI rendering都属于宏任务（也有文章说UI render不属于宏任务，目前还没有定论），process.nextTick、Promise.then、Object.observer(已经被废弃)、MutationObserver(html5新特性)属于微任务。注意进入到任务队列的是具体的执行任务的函数。比如上述例子setTimeout()中的timer函数。另外不同类型的任务会分别进入到他们所属类型的任务队列，比如所有setTimeout()的回调都会进入到setTimeout任务队列，所有then()回调都会进入到then队列。当前的整体代码我们可以认为是宏任务。事件循环从当前整体代码开始第一次事件循环，然后再执行队列中所有的微任务，当微任务执行完毕之后，事件循环再找到其中一个宏任务队列并执行其中的所有任务，然后再找到一个微任务队列并执行里面的所有任务，就这样一直循环下去。</p>
+<p>测试题2<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'global'</span>);</span><br><span class="line">setTimeout(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="keyword">function</span> (<span class="params">resolve</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'timeout1_promise'</span>)</span><br><span class="line">        resolve()</span><br><span class="line">    &#125;).then(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">'timeout1_then'</span>)</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'timeout1'</span>);</span><br><span class="line">&#125;,<span class="number">2000</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">1</span>;i &lt;= <span class="number">5</span>;i ++) &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(i)</span><br><span class="line">    &#125;,i*<span class="number">1000</span>)</span><br><span class="line">    <span class="built_in">console</span>.log(i)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">setTimeout(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'timeout2'</span>)</span><br><span class="line">&#125;, <span class="number">1000</span>);</span><br></pre></td></tr></table></figure></p>
+<p>我们来一步一步分析以上代码：</p>
+<p>首先执行整体代码，“global”会被第一个打印出来。这是第一个输出。</p>
+<p>执行到第一个setTimeout时，发现它是宏任务，此时会新建一个setTimeout类型的宏任务队列并派发当前这个setTimeout的回调函数到刚建好的这个宏任务队列中去，并且轮到它执行时要延迟2秒后再执行。</p>
+<p>代码继续执行走到for循环，发现是循环5次setTimeout()，那就把这5个setTimeout中的回调函数依次派发到上面新建的setTimeout类型的宏任务队列中去，注意，这5个setTimeout的延迟分别是1到5秒。此时这个setTimeout类型的宏任务队列中应该有6个任务了。再执行for循环里的console.log(i)，很简单，直接输出1,2,3,4,5，这是第二个输出。</p>
+<p>再继续走，执行到第二个setTimeout，发现是宏任务，派发它的回调到上面setTimeout类型的宏任务队列中去。</p>
+<p>第一轮事件循环的宏任务执行完成（整体代码可以看做宏任务）。</p>
+<p>开始第二轮事件循环：执行setTimeout类型队列（宏任务队列）中的所有任务。发现都有延时，但延时最短的是for循环中第一次循环push进来的那个setTimeout和第二个setTimeout，它们都只延时1s。它们会被同时执行，但前者先被push进来，所以先执行它！它的作用就是打印变量i，在当前作用域找变量i，木有！去它上层作用域（这里是全局作用域）找，找到了，但此时的i早已是6了。（为啥不是5，那你得去补补for循环的执行流程了~）所以这里第三个输出是延时1s后打印出6。紧接着执行第二个setTimeout，它会打印出”timeout2”，这是第四个输出。</p>
+<p>延迟一秒后，宏队列当中先后有第一个setTimeout和for循环当中的setTimeout，上面有说到Promise.then是微任务，那么这里会生成一个Promise.then类型的微任务队列，这里的then回调会被push进这个队列中。第五个和第六个输出为“timeout1_promise”，“timeout1”，之后执行微任务队列，第七个输出为“timeout1_then”。之后执行宏队列，第八个输出”6”；</p>
+<p>后续就每隔一秒输出”6”，执行三次，全部代码执行完毕。</p>
+<p>执行结果如下：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/9/1620aaf448a321a5?w=464&amp;h=569&amp;f=png&amp;s=27875" alt=""></p>
+<p>测试题3</p>
+<p>改动一下代码，要它以一秒的频率分别输出1，2，3，4，5。</p>
+<p>利用setTimeout第三个参数</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i=<span class="number">1</span>; i&lt;=<span class="number">5</span>; i++) &#123;</span><br><span class="line">  setTimeout( <span class="function"><span class="keyword">function</span> <span class="title">timer</span>(<span class="params">i</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(i);    </span><br><span class="line">   &#125;, i*<span class="number">1000</span>,i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试题4<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setTimeout(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    func1();</span><br><span class="line">&#125;, <span class="number">0</span>);</span><br><span class="line">func2();</span><br></pre></td></tr></table></figure></p>
+<p>setTimeout，setInterval都存在一个最小延迟的问题，虽然你给的delay值为0，但是浏览器执行的是自己的最小值。HTML5标准是4ms，但并不意味着所有浏览器都会遵循这个标准，包括手机浏览器在内，这个最小值既有可能小于4ms也有可能大于4ms。在标准中，如果在setTimeout中嵌套一个setTimeout, 那么嵌套的setTimeout的最小延迟为10ms。</p>
+<h3 id="setInterval"><a href="#setInterval" class="headerlink" title="setInterval"></a>setInterval</h3><p>setInterval有一个很重要的应用是javascript中的动画。</p>
+<p>举个例子，假设我们有一个正方形div，宽度为100px, 现在想让它的宽度在1000毫秒内增加到300px——很简单，算出每毫秒内应该增加的像素，再按每毫秒为周期调用setInterval实现增长。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> div = $(<span class="string">'div'</span>)[<span class="number">0</span>];</span><br><span class="line"><span class="keyword">var</span> width = <span class="built_in">parseInt</span>(div.style.width, <span class="number">10</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> MAX = <span class="number">300</span>, duration = <span class="number">1000</span>;</span><br><span class="line"><span class="keyword">var</span> inc = <span class="built_in">parseFloat</span>( (MAX - width) / duration );</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">animate</span> (<span class="params">id</span>) </span>&#123;</span><br><span class="line">    width += inc;</span><br><span class="line">    <span class="keyword">if</span> (width &gt;= MAX) &#123;</span><br><span class="line">        clearInterval(id);</span><br><span class="line">        <span class="built_in">console</span>.timeEnd(<span class="string">"animate"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    div.style.width = width + <span class="string">"px"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.time(<span class="string">"animate"</span>);</span><br><span class="line"><span class="keyword">var</span> timer = setInterval(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    animate(timer);</span><br><span class="line">&#125;, <span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>执行结果如下：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/9/1620ab7ccd1a2fa3?w=367&amp;h=280&amp;f=png&amp;s=15903" alt=""><br>代码中利用console.time来计算时间所花费的时间——实际上花的时间是明显大于1000毫秒的，为什么？因为上面说到最小周期至少应该是4ms，所以每个周期的增长量应该是每毫秒再乘以四。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> inc = <span class="built_in">parseFloat</span>( (MAX - width) / duration ) * <span class="number">4</span>;</span><br></pre></td></tr></table></figure>
+<p>执行结果如下：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/9/1620aba11617a18b?w=386&amp;h=273&amp;f=png&amp;s=16814" alt=""><br>如果你有心查看jquery的动画源码的话，你能发现源码的时间周期是13ms，13ms 大概是一个在各浏览器上使动画表现接近一致的值。如果最求流畅的动画效果来说，每秒（1000毫秒）应该是60帧，这样算下来每帧的时间应该是16.7毫秒，在这里我把每帧定义为完成一个像素增量所花的时间，也就是16毫秒（毫秒不允许存在小数）是让动画流畅的最佳值。</p>
+<p>无论你如何优化setInterval，误差是始终存在的。但其实在HTML5中，有一个实践动画的最佳途径<span style="color:#F2777A;">requestAnimationFrame</span>。这个函数能保证能以每帧来执行动画函数。比如上面的例子就可以改写为：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//init some values</span></span><br><span class="line"><span class="keyword">var</span> div = $(<span class="string">'div'</span>)[<span class="number">0</span>].style;</span><br><span class="line"><span class="keyword">var</span> height = <span class="built_in">parseInt</span>(div.height, <span class="number">10</span>);</span><br><span class="line"><span class="keyword">var</span> seconds = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//calc distance we need to move per frame over a time</span></span><br><span class="line"><span class="keyword">var</span> max = <span class="number">300</span>;</span><br><span class="line"><span class="keyword">var</span> steps = (max- height) / seconds / <span class="number">16.7</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//16.7ms is approx one frame (1000/60)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//loop</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">animate</span> (<span class="params">id</span>) </span>&#123;</span><br><span class="line">    height += steps; <span class="comment">//use calculated steps</span></span><br><span class="line">    div.height = height + <span class="string">"px"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (height &lt; max) &#123;</span><br><span class="line">        requestAnimationFrame(animate);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">animate();</span><br></pre></td></tr></table></figure></p>
+<p>这种情况下通常会有多个计时器同时运行，如果同时大量计时器同时运行的话，会引起一些个问题，比如如何回收这些计时器？jquery的作者John Resig建议建立一个管理中心，它给出的一个非常简单的代码如下：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> timers = &#123;                               </span><br><span class="line">  timerID: <span class="number">0</span>,                                           </span><br><span class="line">  timers: [],                                           </span><br><span class="line">  add: <span class="function"><span class="keyword">function</span>(<span class="params">fn</span>) </span>&#123;                            </span><br><span class="line">    <span class="keyword">this</span>.timers.push(fn);</span><br><span class="line">  &#125;,</span><br><span class="line">  start: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;                             </span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.timerID) <span class="keyword">return</span>;</span><br><span class="line">    (<span class="function"><span class="keyword">function</span> <span class="title">runNext</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (timers.timers.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; timers.timers.length; i++) &#123;</span><br><span class="line">          <span class="keyword">if</span> (timers.timers[i]() === <span class="literal">false</span>) &#123;</span><br><span class="line">            timers.timers.splice(i,<span class="number">1</span>);</span><br><span class="line">            i--;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        timers.timerID = setTimeout(runNext, <span class="number">0</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)();</span><br><span class="line">  &#125;,</span><br><span class="line">  stop: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;                                  </span><br><span class="line">    clearTimeout(<span class="keyword">this</span>.timerID);</span><br><span class="line">    <span class="keyword">this</span>.timerID = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>注意看中间的start方法：他把所有的定时器都存在一个timers队列（数组）中，只要队列长度不为0，就轮询执行队列中的每一个子计时器，如果某个子计时器执行完毕（这里的标志是返回值是false），那就把这个计时器踢出队列。继续轮询后面的计时器。</p>
+<p>上面描述的整个一轮轮询就是runNext，并且递归轮询，一遍一遍的执行下去timers.timerID = setTimeout(runNext, 0)直到数组为空。</p>
+<p>感谢阅读至此，后面会更新promise的总结，更优的异步解决方案。</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/03/26/H5直播入门（理论篇）/" title= H5直播入门（理论篇） >
+                    <div class="prevTitle">H5直播入门（理论篇）</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:975193199@qq.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/hjchen" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/example_qr.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事件循环"><span class="toc-number">2.</span> <span class="toc-text">事件循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#回调"><span class="toc-number">3.</span> <span class="toc-text">回调</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#setTimeout"><span class="toc-number">4.</span> <span class="toc-text">setTimeout</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#setInterval"><span class="toc-number">5.</span> <span class="toc-text">setInterval</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 2 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span><a class="archive-post-title" href= "/2018/03/27/JS异步与性能（一）/" >JS异步与性能（一）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/26</span><a class="archive-post-title" href= "/2018/03/26/H5直播入门（理论篇）/" >H5直播入门（理论篇）</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'John Doe'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+
