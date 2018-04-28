@@ -9,7 +9,7 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
-    <title>embers&#39;s blog</title>
+    <title>手把手教你用Hexo搭建个人技术博客 · embers&#39;s blog</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -65,6 +65,8 @@
 
     <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
     <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
         
     <link rel="icon" href= /assets/bitbug_favicon.ico>
     <script>
@@ -175,12 +177,23 @@
 </head>
 
     
+        <body class="post-body">
+    
     
 <header class="header">
 
     <div class="read-progress"></div>
     <div class="header-sidebar-menu">&#xe775;</div>
     <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >embers&#39;s blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">手把手教你用Hexo搭建个人技术博客</a>
+            </div>
+    </div>
     
     <a class="home-link" href=/>embers's blog</a>
 </header>
@@ -194,24 +207,61 @@
 
 
 
+height:50vh;
+
 >
     
     <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
             
-    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
     <div class="site-intro-placeholder"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
             
+            手把手教你用Hexo搭建个人技术博客
+            <!-- 404 -->
+            
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
             
+            
+            <!-- 404 -->
+            
         </p>
         <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/04/28</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
         
     </div>
 </div>
@@ -295,53 +345,118 @@
 </script>        
         <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
         <div class="container container-unloaded">
-            <main class="main index-page">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>其实大四实习那会就有搭建个人技术博客的想法了，然后还是懒，搁置了很久。前阵子在掘金发了几篇之前写过的文章，收获了不少赞和阅读量，有点小小的成就感，所以这点动力驱使自己动手了~有些人会觉得搭建个人博客需要购买域名，需要花钱，其实不是的，Github就可以帮助我们免费生成静态网址，这一点后面会提到的。</p>
+<h2 id="什么是Hexo"><a href="#什么是Hexo" class="headerlink" title="什么是Hexo"></a>什么是Hexo</h2><p>Hexo 是一个快速、简洁且高效的博客框架。Hexo 使用 Markdown（或其他渲染引擎）解析文章，在几秒内，即可利用靓丽的主题生成静态网页。此处附上<a href="https://hexo.io/zh-cn/docs/" target="_blank" rel="noopener">Hexo中文官网</a>。下面我们详细介绍搭建步骤。</p>
+<h2 id="安装Git-Bash"><a href="#安装Git-Bash" class="headerlink" title="安装Git Bash"></a>安装Git Bash</h2><p>Git Bash是Windows系统下git的命令行工具。</p>
+<ul>
+<li><a href="https://gitforwindows.org/" target="_blank" rel="noopener">下载地址</a></li>
+<li>安装步骤：双击下载好的exe文件，一路next就可以</li>
+<li>确认成功：执行<code>git version</code>，控制台打印出对应git版本就说明安装成功了。</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/30/16274c2d7873d789" alt=""></p>
+<h2 id="安装Node"><a href="#安装Node" class="headerlink" title="安装Node"></a>安装Node</h2><p>Hexo是基于Node环境的静态博客，npm工具是必不可少的。</p>
+<ul>
+<li><a href="https://nodejs.org/en/" target="_blank" rel="noopener">下载地址</a></li>
+<li>安装步骤：基本操作，这里就不赘述了。</li>
+<li>确认成功：执行<code>node -v</code>，控制台打印出对应Node版本就说明安装成功了。</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/30/16274c40cb66565b?w=337&amp;h=151&amp;f=png&amp;s=18327" alt=""></p>
+<h2 id="安装Hexo"><a href="#安装Hexo" class="headerlink" title="安装Hexo"></a>安装Hexo</h2><ul>
+<li>先创建本地存放blog的文件夹，然后<code>cd</code>到对应目录下。</li>
+<li>安装命令：<code>npm i -g hexo</code>（建议用<code>cnpm</code>安装，会相对快一些）</li>
+<li>确认成功：<code>hexo -v</code></li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/30/16274c983e8bf6c5?w=387&amp;h=241&amp;f=png&amp;s=14454" alt=""></p>
+<ul>
+<li>初始化：<code>hexo init</code>，之后打开的文件夹如下图：</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/30/16274cd8e5dcbac7?w=627&amp;h=219&amp;f=png&amp;s=23529" alt=""></p>
+<ul>
+<li>简单解释下文件夹的作用</li>
+</ul>
+<p>node_modules：依赖包</p>
+<p>scaffolds：命令生成文章等的模板</p>
+<p>source：用命令创建的各种文章</p>
+<p>themes：主题</p>
+<p>_config.yml：整个博客的配置</p>
+<p>package.json：项目所需模块项目的配置信息</p>
+<h2 id="搭桥到Github"><a href="#搭桥到Github" class="headerlink" title="搭桥到Github"></a>搭桥到Github</h2><ul>
+<li>没账号的创建账号（程序猿不应该吧~），有账号的看下面步骤：</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/30/16274d3595e448bb?w=1020&amp;h=704&amp;f=png&amp;s=66323" alt=""></p>
+<ul>
+<li>回到gitbash，配置github账号信息（YourName和YourEail都替换成你自己的）</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/30/16274d516db7d82a?w=575&amp;h=192&amp;f=png&amp;s=35471" alt=""></p>
+<ul>
+<li>创建SSH，在gitbash输入：<code>ssh-keygen -t rsa -C &quot;youremail@example.com</code>，生成ssh，然后按照下图找到<code>id_rsa.pub</code></li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/30/16274d8442172fc3?w=570&amp;h=221&amp;f=png&amp;s=32591" alt=""></p>
+<ul>
+<li>将获取的ssh放到github中：</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/30/16274d8650137af9?w=1014&amp;h=652&amp;f=png&amp;s=52365" alt=""></p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/30/16274d8844f0aac6?w=770&amp;h=442&amp;f=png&amp;s=20324" alt=""></p>
+<h2 id="临门一脚"><a href="#临门一脚" class="headerlink" title="临门一脚"></a>临门一脚</h2><ul>
+<li><p>用编辑器打开blog项目，修改<code>_config.yml</code>文件的一些配置（<strong>记得冒号后必须有空格，不然配置不生效，这是Hexo的一个坑！</strong>）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repo: https://github.com/YourgithubName/YourgithubName.github.io.git</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>进入blog项目，分别执行以下命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo generate</span><br><span class="line">hexo server</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>打开浏览器输入：<code>http://localhost:4000</code>，见证奇迹的时刻到了~</p>
+</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/30/16274dfe1a453faf" alt=""></p>
+<h2 id="上传到Github"><a href="#上传到Github" class="headerlink" title="上传到Github"></a>上传到Github</h2><ul>
+<li>需要先安装Hexo上传仓库的工具，执行<code>npm install hexo-deployer-git --save</code>，这样你写好的文章才能部署到github服务器。</li>
+<li><p>执行命令（建议每次都这样做，先清除、再编译上传）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo generate</span><br><span class="line">hexo deploy</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在浏览器输入<code>http://yourgithubname.github.io</code>，这样你就可以看到自己的在线博客了~</p>
+</li>
+</ul>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/30/16274e5ddae7e60c?w=1920&amp;h=399&amp;f=png&amp;s=27114" alt=""></p>
+<h2 id="优化博客"><a href="#优化博客" class="headerlink" title="优化博客"></a>优化博客</h2><p>有些童鞋一开始看到这博客，哇，好丑~大家都有经验的，默认的主题都是不好看的，这里有<a href="https://hexo.io/themes/" target="_blank" rel="noopener">Hexo主题网址</a>，目前有195个主题任你选，每周换一个都可以换三年~（当然你能这么折腾我也服了~）具体怎么安装主题，点进去对应的地址都有详细说明，这里就不赘述了。这里秀一波<a href="https://hjchen.github.io/" target="_blank" rel="noopener">我的个人博客地址</a>，有空过来刷刷PV也是很ok的~</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/4/8/162a3468a86efcb6?w=1906&amp;h=967&amp;f=png&amp;s=1110779" alt=""></p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/4/8/162a346dc8d6f627?w=376&amp;h=671&amp;f=png&amp;s=205777" alt=""></p>
+<h2 id="写博客"><a href="#写博客" class="headerlink" title="写博客"></a>写博客</h2><p>最后的最后，怎么写博客？</p>
+<ul>
+<li>新建文章：<code>hexo new &#39;文章名&#39;</code>，然后在blog的source文件夹就可以看到了。</li>
+<li>写内容：支持markdown语法，所以我自己现在是用掘金自带的markdown编辑器写完后把文章复制过来的，完美兼容~</li>
+<li>本地看过没问题就上传到github，步骤前面也说了，一般上传后github服务器会有点延迟，十分钟后刷新应该就有最新的blog了。<h2 id="结尾"><a href="#结尾" class="headerlink" title="结尾"></a>结尾</h2><a href="https://hjchen.github.io/" target="_blank" rel="noopener">embers的个人博客（会经常更新）</a></li>
+</ul>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/03/27/JS异步与性能（一）/" title= JS异步与性能（一） >
+                    <div class="prevTitle">JS异步与性能（一）</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
     
     
+    <!--PC版-->
+
+    <!--PC版-->
+
+
     
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/27/JS异步与性能（一）/" >
-                
-                    <span>JS异步与性能（一）</span>
-            </a>
-            <div class="abstract-content">
-                前言看了《你不知道的javascript》上卷以及中卷之后，自己的一些总结。
-事件循环JavaScript 引擎并不是独立运行的，它运行在宿主环境中，对多数开发者来说通常就是Web 浏览器。处理程序中多个块的执行，且执行每块时调用JavaScript 引擎，这种机制被称为事件循环。
-先通过一段...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/27</span>
-                </div>
-                <!-- tags  -->
-                
-            </div>
-        </article>
-    
-    
-    
-        <article class="index-post">
-            <a class="abstract-title" href = "/2018/03/26/H5直播入门（理论篇）/" >
-                
-                    <span>H5直播入门（理论篇）</span>
-            </a>
-            <div class="abstract-content">
-                前言这篇总结其实是去年公司每周技术分享会轮到我的时候写的。那时候公司正在大刀阔斧地准备直播业务，私以为主管会委以重任，就翻了不少论坛，做了一次简单的技术分享。后来直播业务让另一位同事承担了，自己也就没了实践直播的机会，有点可惜吧。好了，废话不多说，开始我们的理论篇~
-技术背景可以看到，直播从 ...
-            </div>
-            <div class="abstract-post-meta">
-                <!-- date  -->
-                <div class="abstract-date">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2018/03/26</span>
-                </div>
-                <!-- tags  -->
-                
-            </div>
-        </article>
-    
-    <!-- paginator  -->
-    
+    <!-- 评论 -->
 </main>
             <!-- profile -->
             
@@ -414,6 +529,24 @@
 </footer>
     </div>
     <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是Hexo"><span class="toc-number">2.</span> <span class="toc-text">什么是Hexo</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装Git-Bash"><span class="toc-number">3.</span> <span class="toc-text">安装Git Bash</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装Node"><span class="toc-number">4.</span> <span class="toc-text">安装Node</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装Hexo"><span class="toc-number">5.</span> <span class="toc-text">安装Hexo</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#搭桥到Github"><span class="toc-number">6.</span> <span class="toc-text">搭桥到Github</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#临门一脚"><span class="toc-number">7.</span> <span class="toc-text">临门一脚</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#上传到Github"><span class="toc-number">8.</span> <span class="toc-text">上传到Github</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#优化博客"><span class="toc-number">9.</span> <span class="toc-text">优化博客</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#写博客"><span class="toc-number">10.</span> <span class="toc-text">写博客</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结尾"><span class="toc-number">11.</span> <span class="toc-text">结尾</span></a></li></ol>
+    </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
     <div class="sidebar sidebar-hide">
@@ -535,6 +668,8 @@ jsonContent:
     
     </div>
     <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
     
     </body>
 </html>
