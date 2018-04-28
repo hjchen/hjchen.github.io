@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html>
+    <!-- title -->
+
+
+
+
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" >
+    <title>让你的Hybrid App听懂你的话（Android篇） · embers&#39;s blog</title>
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .back-top,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+        box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.7);
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(-45deg, #444 0, #444 80px, #333 80px, #333 160px);
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s 1;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+</style>
+
+    <link rel="preload" href= /css/style.css?v=20180317 as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="stylesheet" type="text/css" href= /css/mobile.css?v=20180317 media="(max-width: 980px)"/>
+    
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+        
+    <link rel="icon" href= /assets/bitbug_favicon.ico>
+    <script>
+        (function (w) {
+            "use strict";
+            // rel=preload support test
+            if (!w.loadCSS) {
+                w.loadCSS = function () { };
+            }
+            // define on the loadCSS obj
+            var rp = loadCSS.relpreload = {};
+            // rel=preload feature support test
+            // runs once and returns a function for compat purposes
+            rp.support = (function () {
+                var ret;
+                try {
+                    ret = w.document.createElement("link").relList.supports("preload");
+                } catch (e) {
+                    ret = false;
+                }
+                return function () {
+                    return ret;
+                };
+            })();
+
+            // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+            // then change that media back to its intended value on load
+            rp.bindMediaToggle = function (link) {
+                // remember existing media attr for ultimate state, or default to 'all'
+                var finalMedia = link.media || "all";
+
+                function enableStylesheet() {
+                    link.media = finalMedia;
+                }
+
+                // bind load handlers to enable media
+                if (link.addEventListener) {
+                    link.addEventListener("load", enableStylesheet);
+                } else if (link.attachEvent) {
+                    link.attachEvent("onload", enableStylesheet);
+                }
+
+                // Set rel and non-applicable media type to start an async request
+                // note: timeout allows this to happen async to let rendering continue in IE
+                setTimeout(function () {
+                    link.rel = "stylesheet";
+                    link.media = "only x";
+                });
+                // also enable media after 3 seconds,
+                // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+                setTimeout(enableStylesheet, 3000);
+            };
+
+            // loop through link elements in DOM
+            rp.poly = function () {
+                // double check this to prevent external calls from running
+                if (rp.support()) {
+                    return;
+                }
+                var links = w.document.getElementsByTagName("link");
+                for (var i = 0; i < links.length; i++) {
+                    var link = links[i];
+                    // qualify links to those with rel=preload and as=style attrs
+                    if (link.rel === "preload" && link.getAttribute("as") === "style" && !link.getAttribute("data-loadcss")) {
+                        // prevent rerunning on link
+                        link.setAttribute("data-loadcss", true);
+                        // bind listeners to toggle media back
+                        rp.bindMediaToggle(link);
+                    }
+                }
+            };
+
+            // if unsupported, run the polyfill
+            if (!rp.support()) {
+                // run once at least
+                rp.poly();
+
+                // rerun poly on an interval until onload
+                var run = w.setInterval(rp.poly, 500);
+                if (w.addEventListener) {
+                    w.addEventListener("load", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                } else if (w.attachEvent) {
+                    w.attachEvent("onload", function () {
+                        rp.poly();
+                        w.clearInterval(run);
+                    });
+                }
+            }
+            // commonjs
+            if (typeof exports !== "undefined") {
+                exports.loadCSS = loadCSS;
+            }
+            else {
+                w.loadCSS = loadCSS;
+            }
+        }(typeof global !== "undefined" ? global : this));
+    </script>
+    <script src="//cdn.staticfile.org/jquery/3.2.1/jquery.min.js" defer></script>
+    <script src="/scripts/main.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" defer></script>
+    <!-- 百度统计  -->
+    
+    <!-- 谷歌统计  -->
+    
+</head>
+
+    
+        <body class="post-body">
+    
+    
+<header class="header">
+
+    <div class="read-progress"></div>
+    <div class="header-sidebar-menu">&#xe775;</div>
+    <!-- post页的toggle banner  -->
+    
+    <div class="banner">
+            <div class="blog-title">
+                <a href="/" >embers&#39;s blog</a>
+            </div>
+            <div class="post-title">
+                <a href="#" class="post-name">让你的Hybrid App听懂你的话（Android篇）</a>
+            </div>
+    </div>
+    
+    <a class="home-link" href=/>embers's blog</a>
+</header>
+    <div class="wrapper">
+        <div class="site-intro" style=
+
+
+
+
+
+
+
+
+height:50vh;
+
+>
+    
+    <!-- 主页  -->
+    
+    
+    <!-- 404页  -->
+            
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+            
+            让你的Hybrid App听懂你的话（Android篇）
+            <!-- 404 -->
+            
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            
+            
+            <!-- 404 -->
+            
+        </p>
+        <!-- 文章页meta -->
+        
+            <!-- 文章页标签  -->
+            
+            <div class="post-intro-meta">
+                <span class="post-intro-calander iconfont-archer">&#xe676;</span>
+                <span class="post-intro-time">2018/04/28</span>
+                
+                <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                    <span class="iconfont-archer">&#xe602;</span>
+                    <span id="busuanzi_value_page_pv"></span>
+                </span>
+                
+                <span class="shareWrapper">
+                    <span class="iconfont-archer shareIcon">&#xe71d;</span>
+                    <span class="shareText">Share</span>
+                    <ul class="shareList">
+                        <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                            <div class="share-qrcode"></div>
+                        </li>
+                        <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                        <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                        <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                        <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                    </ul>
+                </span>
+            </div>
+        
+    </div>
+</div>
+        <script>
+  // load webfont-loader async, and add callback function
+  function async(u, c) {
+    var d = document, t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0];
+    o.src = u;
+    if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+    s.parentNode.insertBefore(o, s);
+  }
+  
+  // get user agent
+  var browser = {
+    versions: function () {
+      var u = window.navigator.userAgent;
+      return {
+        userAgent: u,
+        trident: u.indexOf('Trident') > -1, //IE内核
+        presto: u.indexOf('Presto') > -1, //opera内核
+        webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+        gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+        mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+        ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+        android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+        iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+        iPad: u.indexOf('iPad') > -1, //是否为iPad
+        webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+        weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+        uc: u.indexOf('UCBrowser') > -1 //是否为android下的UC浏览器
+      };
+    }()
+  }
+  console.log("userAgent:" + browser.versions.userAgent);
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded');
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document.getElementsByClassName('intro-title')[0].classList.add('intro-fade-in');
+      document.getElementsByClassName('intro-subtitle')[0].classList.add('intro-fade-in');
+      var postIntroTags = document.getElementsByClassName('post-intro-tags')[0],
+        postIntroMeat = document.getElementsByClassName('post-intro-meta')[0];
+      if (postIntroTags) {
+        postIntroTags.classList.add('post-fade-in');
+      }
+      if (postIntroMeat) {
+        postIntroMeat.classList.add('post-fade-in');
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb(){
+    if (browser.versions.uc) {
+      console.log("UCBrowser");
+      fontLoaded();
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular']
+        },
+        loading: function () {  //所有字体开始加载
+          // console.log('loading');
+        },
+        active: function () {  //所有字体已渲染
+          fontLoaded();
+        },
+        inactive: function () { //字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout');
+          fontLoaded();
+        },
+        timeout: 5000 // Set the timeout to two seconds
+      });
+    }
+  }
+
+  async("https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js", asyncCb)
+</script>        
+        <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" />
+        <div class="container container-unloaded">
+            <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近需要对接语音识别业务，毕竟现在是AI时代，一个产品如果能通过AI能力给用户带来全新的体验，也是很值得尝试的。技术对接上选择的是科大讯飞开放平台，也算是国内最早一批做语音识别的企业了，文档方面都比较全面，对接起来也很方便。</p>
+<h2 id="技术基础"><a href="#技术基础" class="headerlink" title="技术基础"></a>技术基础</h2><p>开发技术栈为<code>Cordova</code>+<code>Angular</code>+<code>Ionic</code>，这篇分享会介绍如何从头开始创建Cordova插件，并实现科大讯飞Android sdk与App端的数据交互。</p>
+<p><code>Apache Cordova</code>是一个开源的移动开发框架。允许你用标准的web技术——HTML5，CSS3和JavaScript做跨平台开发。 应用在每个平台的具体执行被封装了起来，并依靠符合标准的API绑定去访问每个设备的功能，比如说：传感器、数据、网络状态等。</p>
+<p>在继续阅读之前，应该确保你有通过<code>Cordova</code>创建并打包一个简单<code>Hybrid App</code>的经验，感兴趣的童鞋可以到<a href="https://ionicframework.com/framework" target="_blank" rel="noopener">Ionic官网</a>和<a href="http://cordova.axuer.com/" target="_blank" rel="noopener">Cordova官网</a>学习下。</p>
+<h2 id="创建Cordova插件"><a href="#创建Cordova插件" class="headerlink" title="创建Cordova插件"></a>创建Cordova插件</h2><h3 id="全局安装plugman"><a href="#全局安装plugman" class="headerlink" title="全局安装plugman"></a>全局安装plugman</h3><p><code>plugman</code>用于创建Cordova插件，在项目目录下执行<code>cnpm i -g plugman</code></p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/4/24/162f6874948c3ce7?w=649&amp;h=369&amp;f=png&amp;s=29123" alt=""></p>
+<h3 id="创建插件"><a href="#创建插件" class="headerlink" title="创建插件"></a>创建插件</h3><p>创建一个插件并添加android平台，并生成package.json，插件名<code>xFeiVoice</code>，插件id<code>com.qinsilk.xFeiVoice</code>，版本号为<code>0.01</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">plugman create --name xFeiVoice --plugin_id com.qinsilk.xFeiVoice --plugin_version 0.0.1</span><br><span class="line">cd xFeiVoice</span><br><span class="line">plugman createpackagejson ./</span><br><span class="line">plugman platform add --platform_name android</span><br></pre></td></tr></table></figure></p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/4/24/162f68c2463314c2?w=661&amp;h=355&amp;f=png&amp;s=18481" alt=""><br>创建成功可以看到对应目录如下<br><img src="https://user-gold-cdn.xitu.io/2018/4/24/162f693aa2aeca4d?w=725&amp;h=220&amp;f=png&amp;s=36083" alt=""></p>
+<ul>
+<li>src目录存放原生代码，此处为java文件</li>
+<li>www目录存放js暴露给设备的接口，如下<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> exec = <span class="built_in">require</span>(<span class="string">'cordova/exec'</span>);</span><br><span class="line"></span><br><span class="line">exports.coolMethod = <span class="function"><span class="keyword">function</span> (<span class="params">arg0, success, error</span>) </span>&#123;</span><br><span class="line">    exec(success, error, <span class="string">'xFeiVoice'</span>, <span class="string">'coolMethod'</span>, [arg0]);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>此时我们做下修改，让参数名跟业务命名更加相关。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> exec = <span class="built_in">require</span>(<span class="string">'cordova/exec'</span>);</span><br><span class="line"></span><br><span class="line">exports.record = <span class="function"><span class="keyword">function</span> (<span class="params">arg0, success, error</span>) </span>&#123;</span><br><span class="line">    exec(success, error, <span class="string">'xFeiVoice'</span>, <span class="string">'record'</span>, [arg0]);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h3 id="安装插件"><a href="#安装插件" class="headerlink" title="安装插件"></a>安装插件</h3><p>执行<code>cordova plugin add xFeiVoice</code>，再执行<code>cordova plugin ls</code>可以查看当前App安装的插件。<br><img src="https://user-gold-cdn.xitu.io/2018/4/24/162f699eba593067?w=549&amp;h=508&amp;f=png&amp;s=27923" alt=""><br>此时用Android Studio打开项目，可以看到这个插件已经添加成功。<br><img src="https://user-gold-cdn.xitu.io/2018/4/24/162f69c8087ccf96?w=1295&amp;h=618&amp;f=png&amp;s=93195" alt=""><br>到这里我们的准备工作就完成了。</p>
+<h2 id="对接语音识别"><a href="#对接语音识别" class="headerlink" title="对接语音识别"></a>对接语音识别</h2><h3 id="导入sdk"><a href="#导入sdk" class="headerlink" title="导入sdk"></a>导入sdk</h3><p>Android sdk可以去<a href="http://www.xfyun.cn/" target="_blank" rel="noopener">科大讯飞开放平台</a>下载。将在官网下载的Android SDK 压缩包中libs目录下所有子文件拷贝至Android工程的libs目录下。如下图所示：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/4/24/162f6a4b988434d1?w=714&amp;h=425&amp;f=png&amp;s=60270" alt=""></p>
+<h3 id="添加权限"><a href="#添加权限" class="headerlink" title="添加权限"></a>添加权限</h3><p>在工程 AndroidManifest.xml 文件中添加如下权限：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;!--连接网络权限，用于执行云端语音能力 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.INTERNET&quot;/&gt;</span><br><span class="line">&lt;!--获取手机录音机使用权限，听写、识别、语义理解需要用到此权限 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.RECORD_AUDIO&quot;/&gt;</span><br><span class="line">&lt;!--读取网络信息状态 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.ACCESS_NETWORK_STATE&quot;/&gt;</span><br><span class="line">&lt;!--获取当前wifi状态 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.ACCESS_WIFI_STATE&quot;/&gt;</span><br><span class="line">&lt;!--允许程序改变网络连接状态 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.CHANGE_NETWORK_STATE&quot;/&gt;</span><br><span class="line">&lt;!--读取手机信息权限 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.READ_PHONE_STATE&quot;/&gt;</span><br><span class="line">&lt;!--读取联系人权限，上传联系人需要用到此权限 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.READ_CONTACTS&quot;/&gt;</span><br><span class="line">&lt;!--外存储写权限，构建语法需要用到此权限 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.WRITE_EXTERNAL_STORAGE&quot;/&gt;</span><br><span class="line">&lt;!--外存储读权限，构建语法需要用到此权限 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.READ_EXTERNAL_STORAGE&quot;/&gt;</span><br><span class="line">&lt;!--配置权限，用来记录应用配置信息 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.WRITE_SETTINGS&quot;/&gt;</span><br><span class="line">&lt;!--手机定位信息，用来为语义等功能提供定位，提供更精准的服务--&gt;</span><br><span class="line">&lt;!--定位信息是敏感信息，可通过Setting.setLocationEnable(false)关闭定位请求 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.ACCESS_FINE_LOCATION&quot;/&gt;</span><br><span class="line">&lt;!--如需使用人脸识别，还要添加：摄相头权限，拍照需要用到 --&gt;</span><br><span class="line">&lt;uses-permission android:name=&quot;android.permission.CAMERA&quot; /&gt;</span><br></pre></td></tr></table></figure></p>
+<h3 id="初始化语音识别对象"><a href="#初始化语音识别对象" class="headerlink" title="初始化语音识别对象"></a>初始化语音识别对象</h3><p>此处调用的是60秒语音听写功能。<code>excute</code>是在开发插件时，用户的自定义方法，当页面调用插件时系统首先将会运行此方法。<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">execute</span><span class="params">(String action, JSONArray args, CallbackContext callbackContext)</span> <span class="keyword">throws</span> JSONException </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.callbackContext = callbackContext;</span><br><span class="line">    <span class="keyword">if</span> (action.equals(<span class="string">"record"</span>)) &#123;</span><br><span class="line">        <span class="comment">// 初始化语音识别对象</span></span><br><span class="line">        SpeechUtility.createUtility(cordova.getActivity(), <span class="string">"appid=yourAppid,force_login=true"</span>);</span><br><span class="line">        <span class="comment">// 使用SpeechRecognizer对象，可根据回调消息自定义界面；</span></span><br><span class="line">        mIat = SpeechRecognizer.createRecognizer(cordova.getActivity(), mInitListener);</span><br><span class="line">        <span class="comment">// 设置参数</span></span><br><span class="line">        setParam();</span><br><span class="line">        <span class="comment">// 监听事件</span></span><br><span class="line">        mIat.startListening(mRecognizerListener);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="初始化监听器"><a href="#初始化监听器" class="headerlink" title="初始化监听器"></a>初始化监听器</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> InitListener mInitListener = <span class="keyword">new</span> InitListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onInit</span><span class="params">(<span class="keyword">int</span> code)</span> </span>&#123;</span><br><span class="line">        Log.d(LOG_TAG, <span class="string">"SpeechRecognizer init() code = "</span> + code);</span><br><span class="line">        <span class="keyword">if</span> (code != ErrorCode.SUCCESS) &#123;</span><br><span class="line">            Log.d(LOG_TAG, <span class="string">"初始化失败，错误码："</span> + code);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="设置参数"><a href="#设置参数" class="headerlink" title="设置参数"></a>设置参数</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setParam</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 清空参数</span></span><br><span class="line">    mIat.setParameter(SpeechConstant.PARAMS, <span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置听写引擎</span></span><br><span class="line">    mIat.setParameter(SpeechConstant.ENGINE_TYPE, mEngineType);</span><br><span class="line">    <span class="comment">// 设置返回结果格式</span></span><br><span class="line">    mIat.setParameter(SpeechConstant.RESULT_TYPE, <span class="string">"json"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置语音前端点:静音超时时间，即用户多长时间不说话则当做超时处理</span></span><br><span class="line">    mIat.setParameter(SpeechConstant.VAD_BOS, <span class="string">"4000"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置语音后端点:后端点静音检测时间，即用户停止说话多长时间内即认为不再输入， 自动停止录音</span></span><br><span class="line">    mIat.setParameter(SpeechConstant.VAD_EOS, <span class="string">"1000"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置标点符号,设置为"0"返回结果无标点,设置为"1"返回结果有标点</span></span><br><span class="line">    mIat.setParameter(SpeechConstant.ASR_PTT, <span class="string">"0"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置音频保存路径，保存音频格式支持pcm、wav，设置路径为sd卡请注意WRITE_EXTERNAL_STORAGE权限</span></span><br><span class="line">    <span class="comment">// 注：AUDIO_FORMAT参数语记需要更新版本才能生效</span></span><br><span class="line">    mIat.setParameter(SpeechConstant.AUDIO_FORMAT,<span class="string">"wav"</span>);</span><br><span class="line">    mIat.setParameter(SpeechConstant.ASR_AUDIO_PATH, Environment.getExternalStorageDirectory()+<span class="string">"/msc/iat.wav"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="识别监听器"><a href="#识别监听器" class="headerlink" title="识别监听器"></a>识别监听器</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> RecognizerListener mRecognizerListener = <span class="keyword">new</span> RecognizerListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onVolumeChanged</span><span class="params">(<span class="keyword">int</span> volume, <span class="keyword">byte</span>[] data)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// showTip("当前正在说话，音量大小：" + volume);</span></span><br><span class="line">        Log.d(LOG_TAG, <span class="string">"返回音频数据："</span>+data.length);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResult</span><span class="params">(<span class="keyword">final</span> RecognizerResult result, <span class="keyword">boolean</span> isLast)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//此处有坑，isLast为true时会返回标点符号</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">null</span> != result &amp;&amp; !isLast) &#123;</span><br><span class="line">            String text = parseIatResult(result.getResultString());</span><br><span class="line">            JSONObject obj = <span class="keyword">new</span> JSONObject();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                obj.put(<span class="string">"searchText"</span>, text);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (JSONException e) &#123;</span><br><span class="line">                Log.d(LOG_TAG, <span class="string">"This should never happen"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>( <span class="keyword">null</span> != mIat )&#123;</span><br><span class="line">                <span class="comment">// 退出时释放连接</span></span><br><span class="line">                mIat.cancel();</span><br><span class="line">                mIat.destroy();</span><br><span class="line">            &#125;</span><br><span class="line">            getSearchText(obj);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            Log.d(LOG_TAG, <span class="string">"recognizer result : null"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onEndOfSpeech</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 此回调表示：检测到了语音的尾端点，已经进入识别过程，不再接受语音输入</span></span><br><span class="line">        Log.d(LOG_TAG, <span class="string">"结束说话"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onBeginOfSpeech</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 此回调表示：sdk内部录音机已经准备好了，用户可以开始语音输入</span></span><br><span class="line">        Log.d(LOG_TAG, <span class="string">"开始说话"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(SpeechError error)</span> </span>&#123;</span><br><span class="line">        Log.d(LOG_TAG, <span class="string">"onError Code："</span>	+ error.getErrorCode());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onEvent</span><span class="params">(<span class="keyword">int</span> eventType, <span class="keyword">int</span> arg1, <span class="keyword">int</span> arg2, Bundle obj)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 以下代码用于获取与云端的会话id，当业务出错时将会话id提供给技术支持人员，可用于查询会话日志，定位出错原因</span></span><br><span class="line">        <span class="comment">// 若使用本地能力，会话id为null</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="处理结果并返回App端"><a href="#处理结果并返回App端" class="headerlink" title="处理结果并返回App端"></a>处理结果并返回App端</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 处理结果</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">parseIatResult</span><span class="params">(String json)</span> </span>&#123;</span><br><span class="line">    StringBuffer ret = <span class="keyword">new</span> StringBuffer();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        JSONTokener tokener = <span class="keyword">new</span> JSONTokener(json);</span><br><span class="line">        JSONObject joResult = <span class="keyword">new</span> JSONObject(tokener);</span><br><span class="line"></span><br><span class="line">        JSONArray words = joResult.getJSONArray(<span class="string">"ws"</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; words.length(); i++) &#123;</span><br><span class="line">            <span class="comment">// 转写结果词，默认使用第一个结果</span></span><br><span class="line">            JSONArray items = words.getJSONObject(i).getJSONArray(<span class="string">"cw"</span>);</span><br><span class="line">            JSONObject obj = items.getJSONObject(<span class="number">0</span>);</span><br><span class="line">            ret.append(obj.getString(<span class="string">"w"</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret.toString();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//将结果通过callbackContext返回App端</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getSearchText</span><span class="params">(JSONObject obj)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.callbackContext.success(obj);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="App端调用sdk并监听数据返回"><a href="#App端调用sdk并监听数据返回" class="headerlink" title="App端调用sdk并监听数据返回"></a>App端调用sdk并监听数据返回</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//语音识别</span></span><br><span class="line">$scope.record = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">window</span>.cordova &amp;&amp; <span class="built_in">window</span>.cordova.plugins) &#123;</span><br><span class="line">        <span class="keyword">if</span>(!$scope.recording)&#123;</span><br><span class="line">            <span class="comment">//调用sdk</span></span><br><span class="line">            cordova.plugins.xFeiVoice.record(&#123;&#125;, <span class="function"><span class="keyword">function</span> (<span class="params">result</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">if</span>(result)&#123;</span><br><span class="line">                    <span class="comment">//返回识别结果</span></span><br><span class="line">                    $scope.search.goodKey = result.searchText;</span><br><span class="line">                    $scope.openModal();</span><br><span class="line">                    $scope.recording = <span class="literal">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">'success'</span>);</span><br><span class="line">            &#125;, <span class="function"><span class="keyword">function</span> (<span class="params">result</span>) </span>&#123;</span><br><span class="line">                <span class="built_in">console</span>.log(<span class="string">'fail'</span>);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">            <span class="comment">//$scope.recordMedia.stopRecord();</span></span><br><span class="line">        &#125;</span><br><span class="line">        $scope.recording = !$scope.recording;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>插件代码我已经上传到<a href="https://github.com/hjchen/cordova-plugin-xFeiVoice" target="_blank" rel="noopener">github</a>了，有需要的可以clone。走过路过给个star吧~</p>
+
+    </article>
+    <!-- 前后页  -->
+    <ul class="post-paginator">
+        <li class="next">
+            
+        </li>
+        <li class="previous">
+            
+                <div class="prevSlogan">Previous Post</div>
+                <a href= "/2018/04/28/手把手教你用Hexo搭建个人技术博客/" title= 手把手教你用Hexo搭建个人技术博客 >
+                    <div class="prevTitle">手把手教你用Hexo搭建个人技术博客</div>
+                </a>
+            
+        </li>
+    </ul>
+    <!-- 评论插件 -->
+    <!-- 来必力City版安装代码 -->
+
+<!-- City版安装代码已完成 -->
+    
+    
+    <!--PC版-->
+
+    <!--PC版-->
+
+
+    
+    <!-- 评论 -->
+</main>
+            <!-- profile -->
+            
+        </div>
+        <footer class="footer footer-unloaded">
+    <!-- social  -->
+    
+    <div class="social">
+        
+    
+        
+            
+                <a href="mailto:975193199@qq.com" class="iconfont-archer email" title=email ></a>
+            
+        
+    
+        
+            
+                <a href="//github.com/hjchen" class="iconfont-archer github" target="_blank" title=github></a>
+            
+        
+    
+        
+            
+                <span class="iconfont-archer wechat" title=wechat>
+                  
+                  <img class="profile-qr" src="/assets/example_qr.jpg" />
+                </span>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+    </div>
+    
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- 不蒜子  -->
+    
+    <div class="busuanzi-container">
+        <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span>
+        </span>
+    </div>
+    
+</footer>
+    </div>
+    <!-- toc -->
+    
+    <div class="toc-wrapper" style=
+    
+
+
+
+
+
+
+
+top:50vh;
+
+    >
+        <div class="toc-catalog">
+            <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+        </div>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#技术基础"><span class="toc-number">2.</span> <span class="toc-text">技术基础</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#创建Cordova插件"><span class="toc-number">3.</span> <span class="toc-text">创建Cordova插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#全局安装plugman"><span class="toc-number">3.1.</span> <span class="toc-text">全局安装plugman</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#创建插件"><span class="toc-number">3.2.</span> <span class="toc-text">创建插件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#安装插件"><span class="toc-number">3.3.</span> <span class="toc-text">安装插件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#对接语音识别"><span class="toc-number">4.</span> <span class="toc-text">对接语音识别</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#导入sdk"><span class="toc-number">4.1.</span> <span class="toc-text">导入sdk</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#添加权限"><span class="toc-number">4.2.</span> <span class="toc-text">添加权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#初始化语音识别对象"><span class="toc-number">4.3.</span> <span class="toc-text">初始化语音识别对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#初始化监听器"><span class="toc-number">4.4.</span> <span class="toc-text">初始化监听器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#设置参数"><span class="toc-number">4.5.</span> <span class="toc-text">设置参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#识别监听器"><span class="toc-number">4.6.</span> <span class="toc-text">识别监听器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#处理结果并返回App端"><span class="toc-number">4.7.</span> <span class="toc-text">处理结果并返回App端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#App端调用sdk并监听数据返回"><span class="toc-number">4.8.</span> <span class="toc-text">App端调用sdk并监听数据返回</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结语"><span class="toc-number">5.</span> <span class="toc-text">结语</span></a></li></ol>
+    </div>
+    
+    <div class="back-top iconfont-archer">&#xe639;</div>
+    <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+          <div class="sidebar-panel-archives">
+    <!-- 在ejs中将archive按照时间排序 -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <div class="total-archive"> Total : 4 </div>
+    
+    <div class="post-archive">
+    
+    
+    
+    
+    <div class="archive-year"> 2018 </div>
+    <ul class="year-list">
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2018/04/28/让你的Hybrid-App听懂你的话（Android篇）/" >让你的Hybrid App听懂你的话（Android篇）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/28</span><a class="archive-post-title" href= "/2018/04/28/手把手教你用Hexo搭建个人技术博客/" >手把手教你用Hexo搭建个人技术博客</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/27</span><a class="archive-post-title" href= "/2018/03/27/JS异步与性能（一）/" >JS异步与性能（一）</a>
+        </li>
+    
+    
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/26</span><a class="archive-post-title" href= "/2018/03/26/H5直播入门（理论篇）/" >H5直播入门（理论篇）</a>
+        </li>
+    
+    </div>
+  </div>
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+    缺失模块。<br/>
+    1、请确保node版本大于6.2<br/>
+    2、在博客根目录（注意不是archer根目录）执行以下命令：<br/>
+    <span style="color: #f75357; font-size: 1rem; line-height: 2rem;">npm i hexo-generator-json-content --save</span><br/>
+    3、在根目录_config.yml里添加配置：
+    <pre style="color: #787878; font-size: 0.6rem;">
+jsonContent:
+  meta: false
+  pages: false
+  posts:
+    title: true
+    date: true
+    path: true
+    text: false
+    raw: false
+    content: false
+    slug: false
+    updated: false
+    comments: false
+    link: false
+    permalink: false
+    excerpt: false
+    categories: true
+    tags: true</pre>
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+    
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+    </div>
+</div> 
+    <script>
+    var siteMeta = {
+        root: '/',
+        author: 'John Doe'
+    }
+</script>
+    <!-- busuanzi  -->
+    
+    <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    
+    <!-- CNZZ  -->
+    
+    </div>
+    <!-- async load share.js -->
+    
+        <script src="/scripts/share.js" async></script>    
+    
+    </body>
+</html>
+
+
